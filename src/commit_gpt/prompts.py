@@ -11,7 +11,6 @@ Your task is to:
 1. Analyze the provided git diff as a SINGLE commit
 2. Generate ONE commit subject (max 72 characters) that summarizes the entire change
 3. Optionally generate a commit body with bullet points covering all changes
-4. Optionally generate a PR title and summary if requested
 
 IMPORTANT: Treat the entire diff as a single, cohesive commit. Do not generate separate commit messages for individual files unless the changes are completely unrelated. Group related changes together under one commit message.
 
@@ -64,22 +63,10 @@ Assistant format (strict):
 SUBJECT: <single line <= 72 chars covering all changes>
 BODY:
 - <bullet 1>
-- <bullet 2>
-{pr_sections}"""
+- <bullet 2>"""
 
 
-def get_pr_sections() -> str:
-    """Get PR-specific prompt sections."""
-    return """
-
-PR_TITLE: <descriptive title>
-PR_SUMMARY:
-- <key change 1>
-- <key change 2>
-- <key change 3>"""
-
-
-def format_user_prompt(ctx: Dict, style: str = "conventional", want_pr: bool = False) -> str:
+def format_user_prompt(ctx: Dict, style: str = "conventional") -> str:
     """Format the user prompt with context."""
     template = get_user_prompt_template()
 
@@ -94,9 +81,6 @@ def format_user_prompt(ctx: Dict, style: str = "conventional", want_pr: bool = F
     else:
         purpose_section = ""
 
-    # Add PR sections if requested
-    pr_sections = get_pr_sections() if want_pr else ""
-
     return template.format(
         style=style,
         repo=ctx.get("repo", "unknown"),
@@ -104,7 +88,6 @@ def format_user_prompt(ctx: Dict, style: str = "conventional", want_pr: bool = F
         subjects=subjects_str,
         purpose_section=purpose_section,
         diff=ctx.get("diff", ""),
-        pr_sections=pr_sections,
     )
 
 

@@ -54,8 +54,6 @@ class CommitOutput(BaseModel):
 
     subject: str
     body: Optional[str] = None
-    pr_title: Optional[str] = None
-    pr_summary: Optional[str] = None
 
 
 @app.command()
@@ -67,7 +65,6 @@ def main(
     style: str = typer.Option(
         "conventional", "--style", "-s", help="Commit style: conventional or casual"
     ),
-    pr: bool = typer.Option(False, "--pr", help="Generate PR title and summary"),
     explain: bool = typer.Option(False, "--explain", "-e", help="Show rationale and cost estimate"),
     risk_check: bool = typer.Option(
         False, "--risk-check", help="Exit with code 2 if risk > threshold"
@@ -156,14 +153,13 @@ def main(
             use_llm = False
 
         if use_llm:
-            out, rationale, cost = summarize_diff(ctx, style=style, want_pr=pr, max_cost=max_cost)
+            out, rationale, cost = summarize_diff(ctx, style=style, max_cost=max_cost)
             if explain:
                 typer.echo(f"[explain] ${cost:.4f} :: {rationale}", err=True)
-            subject, body, pr_title, pr_sum = out.subject, out.body, out.pr_title, out.pr_summary
+            subject, body = out.subject, out.body
         else:
             formatter = format_casual if style == "casual" else format_conventional
             subject, body = enforce_limits(formatter.offline(ctx))
-            pr_title = pr_sum = None
 
         # Handle suggest_groups for large diffs
         if suggest_groups and is_too_large:
@@ -254,7 +250,7 @@ def main(
                 cache = Cache()
 
                 # Build the same prompt that was used to generate the message
-                prompt = build_prompt(ctx, style=style, want_pr=pr)
+                prompt = build_prompt(ctx, style=style)
                 cached = cache.get(prompt)
 
                 if not cached:
@@ -351,8 +347,6 @@ def main(
         typer.echo(subject)
         if body:
             typer.echo(f"\n{body}")
-        if pr and pr_title:
-            typer.echo(f"\nPR_TITLE: {pr_title}\nPR_SUMMARY:\n{pr_sum}")
 
         # Write to git if requested
         if write:

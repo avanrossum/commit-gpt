@@ -11,8 +11,6 @@ class CommitMessage:
 
     subject: str
     body: Optional[str] = None
-    pr_title: Optional[str] = None
-    pr_summary: Optional[str] = None
 
 
 class ConventionalFormatter:
