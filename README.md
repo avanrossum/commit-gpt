@@ -118,6 +118,178 @@ Checklist:
   🚨 Review production changes
 ```
 
+### Edit Cached Commit Messages
+
+```bash
+# Generate a commit message (cached automatically)
+$ commit-gpt "add user authentication"
+feat: add user authentication system
+
+- implement login and logout functionality
+- add JWT token handling
+- include user session management
+
+# Edit the cached message in your system editor
+$ commit-gpt --amend
+# [Opens your editor with the message above]
+
+# Show the edited message (from cache)
+$ commit-gpt
+feat: add comprehensive user authentication system
+
+- implement secure login and logout functionality
+- add JWT token generation and validation
+- include user session management with Redis
+- add comprehensive error handling and logging
+
+# Write the edited message to git
+$ commit-gpt -w
+# [Commits with your edited message]
+```
+
+### Complete Workflow Examples
+
+#### **Feature Development Workflow**
+
+```bash
+# 1. Start working on a feature
+git add src/auth.py src/models.py
+
+# 2. Generate initial commit message
+commit-gpt "implement user authentication"
+feat: implement user authentication system
+
+- add user model with secure password hashing
+- implement login and registration endpoints
+- add JWT token generation and validation
+
+# 3. Realize you want to add more details
+commit-gpt --amend
+# [Edit in VS Code: add more context about security features]
+
+# 4. Review the updated message
+commit-gpt
+feat: implement secure user authentication system
+
+- add user model with bcrypt password hashing
+- implement login and registration endpoints with rate limiting
+- add JWT token generation and validation with refresh tokens
+- include comprehensive input validation and error handling
+- add audit logging for security events
+
+# 5. Commit when satisfied
+commit-gpt -w
+```
+
+#### **Bug Fix Workflow**
+
+```bash
+# 1. Fix a bug
+git add src/bugfix.py
+
+# 2. Generate fix message
+commit-gpt "fix authentication bug"
+fix: resolve token refresh race condition
+
+- prevent multiple simultaneous token refresh requests
+- add request deduplication using Redis locks
+- improve error handling for concurrent requests
+
+# 3. Add more technical details
+commit-gpt --amend
+# [Add specific details about the race condition]
+
+# 4. Final review and commit
+commit-gpt -w
+```
+
+#### **Large Change Workflow**
+
+```bash
+# 1. Make significant changes
+git add .
+
+# 2. Generate comprehensive message
+commit-gpt "refactor entire authentication system"
+feat: refactor authentication system for better security
+
+- migrate from JWT to session-based authentication
+- implement CSRF protection and rate limiting
+- add comprehensive audit logging
+- update all authentication endpoints
+- include new security middleware
+
+# 3. Split into smaller commits (if needed)
+commit-gpt --suggest-groups
+[INFO] Large diff detected (15,000 tokens). Suggested commit groups:
+
+Group 1 (3,200 tokens):
+  Files: src/auth/models.py, src/auth/schemas.py
+
+Group 2 (4,100 tokens):
+  Files: src/auth/endpoints.py, src/auth/middleware.py
+
+Group 3 (2,800 tokens):
+  Files: tests/auth/test_models.py, tests/auth/test_endpoints.py
+
+# 4. Commit each group separately
+git reset HEAD~  # Unstage all changes
+git add src/auth/models.py src/auth/schemas.py
+commit-gpt "add new auth models" -w
+
+git add src/auth/endpoints.py src/auth/middleware.py
+commit-gpt "implement auth endpoints" -w
+
+git add tests/auth/
+commit-gpt "add auth tests" -w
+```
+
+## How It Works
+
+### Caching System
+
+Commit-GPT uses intelligent caching to avoid repeated API calls:
+
+- **Cache Location**: `~/.commit-gpt/cache.db` (SQLite)
+- **Cache Key**: Hash of the entire prompt (diff + context + style)
+- **Cache Hit**: Same staged changes → No API call, instant response
+- **Cache Miss**: Different changes → New API call, cached for next time
+
+### Typical Workflow
+
+```bash
+# First run - API call, cached
+commit-gpt "add feature"
+# [explain] $0.1491 :: Generated with AI
+# feat: add new feature
+
+# Same staged changes - CACHE HIT! No API call
+commit-gpt "add feature"  
+# [explain] $0.0000 :: Using cached response
+# feat: add new feature
+
+# Edit the cached message
+commit-gpt --amend
+# [Opens editor, edit message]
+
+# Show edited message - Still cache hit!
+commit-gpt
+# feat: add comprehensive new feature with tests
+
+# Write to git - Still cache hit!
+commit-gpt -w
+# [Commits with edited message]
+```
+
+### Editor Integration
+
+The `--amend` feature opens your system editor:
+
+- **VS Code**: `code --wait --new-window`
+- **Vim**: `vim`
+- **Nano**: `nano`
+- **Custom**: Set `$EDITOR` environment variable
+
 ## Advanced Usage
 
 ### Generate PR Summary

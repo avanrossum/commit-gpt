@@ -11,7 +11,7 @@ from pydantic import BaseModel
 
 from .gitio import staged_diff, recent_subjects, current_branch, repo_name, suggest_commit_groups
 from .redact import scrub, estimate_tokens
-from .llm import summarize_diff, have_llm, is_diff_too_large
+from .llm import summarize_diff, have_llm, is_diff_too_large, build_prompt, parse_llm_response
 from .formatters import format_conventional, format_casual, enforce_limits
 from .risk import assess
 
@@ -69,6 +69,7 @@ def main(
     max_cost: float = typer.Option(None, "--max-$", help="Maximum cost in dollars"),
     suggest_groups: bool = typer.Option(False, "--suggest-groups", help="Suggest how to split large diffs into multiple focused commits"),
     force_write: bool = typer.Option(False, "--force-write", help="Force write even for very large diffs (not recommended)"),
+    amend: bool = typer.Option(False, "--amend", help="Edit the most recent commit message in your system editor"),
 ) -> None:
     """Generate commit messages from git diffs using AI.
     
@@ -198,6 +199,102 @@ def main(
             typer.echo(f"  3. Use --force-write if you really want this message", err=True)
             typer.echo(f"", err=True)
             raise typer.Exit(1)
+
+        # Handle amend mode - edit cached commit message
+        if amend:
+            try:
+                # Check if we have a cached response for the current diff
+                from .llm import Cache
+                cache = Cache()
+                
+                # Build the same prompt that was used to generate the message
+                prompt = build_prompt(ctx, style=style, want_pr=pr)
+                cached = cache.get(prompt)
+                
+                if not cached:
+                    typer.echo("Error: No cached commit message found. Run commit-gpt first to generate a message.", err=True)
+                    raise typer.Exit(1)
+                
+                # Get the cached response and parse it
+                response_text, cost = cached
+                response = parse_llm_response(response_text, ctx)
+                
+                # Create the commit message content from cached response
+                msg = response.subject
+                if response.body:
+                    msg += f"\n\n{response.body}"
+                
+                # Write to temporary file
+                import tempfile
+                import os
+                
+                with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
+                    f.write(msg)
+                    temp_file = f.name
+                
+                # Open in editor with better detection
+                editor = os.getenv('EDITOR')
+                
+                # Try common editors if EDITOR is not set
+                if not editor:
+                    # Check for common editors
+                    for common_editor in ['code', 'vim', 'nano', 'emacs']:
+                        try:
+                            subprocess.run(['which', common_editor], check=True, capture_output=True)
+                            editor = common_editor
+                            break
+                        except subprocess.CalledProcessError:
+                            continue
+                    
+                    # Fallback to nano if nothing found
+                    if not editor:
+                        editor = 'nano'
+                
+                # Handle VS Code and other editors that need special handling
+                if 'code' in editor:
+                    # If editor already has flags, use it as is
+                    if '--wait' in editor:
+                        subprocess.run(editor.split() + [temp_file], check=True)
+                    else:
+                        # VS Code needs --wait flag to wait for file to close
+                        subprocess.run([editor, '--wait', temp_file], check=True)
+                else:
+                    subprocess.run([editor, temp_file], check=True)
+                
+                # Read back the edited message
+                with open(temp_file, 'r') as f:
+                    edited_msg = f.read().strip()
+                
+                # Clean up temp file
+                os.unlink(temp_file)
+                
+                # Parse the edited message to extract subject and body
+                lines = edited_msg.strip().split('\n')
+                edited_subject = lines[0].strip()
+                edited_body = '\n'.join(lines[1:]).strip() if len(lines) > 1 else None
+                
+                # Update the cached response with the edited message
+                # We need to reconstruct the LLM response format
+                updated_response = f"SUBJECT: {edited_subject}"
+                if edited_body:
+                    updated_response += f"\nBODY:\n{edited_body}"
+                
+                # Update the cache with the edited response
+                cache.set(prompt, updated_response, cost)
+                
+                if explain:
+                    typer.echo(f"[explain] Updated cached commit message", err=True)
+                
+                # Output the edited message
+                typer.echo(edited_subject)
+                if edited_body:
+                    typer.echo(f"\n{edited_body}")
+                
+                return
+                
+            except Exception as e:
+                typer.echo(f"Error during amend: {e}", err=True)
+                raise typer.Exit(1)
 
         # Output
         typer.echo(subject)
