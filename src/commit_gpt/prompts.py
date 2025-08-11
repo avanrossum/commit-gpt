@@ -1,6 +1,6 @@
 """Prompt templates for LLM interactions."""
 
-from typing import Dict, List
+from typing import Dict
 
 
 def get_system_prompt() -> str:
@@ -82,29 +82,29 @@ PR_SUMMARY:
 def format_user_prompt(ctx: Dict, style: str = "conventional", want_pr: bool = False) -> str:
     """Format the user prompt with context."""
     template = get_user_prompt_template()
-    
+
     # Format recent subjects
-    subjects = ctx.get('subjects', [])
-    subjects_str = ', '.join(subjects) if subjects else 'none'
-    
+    subjects = ctx.get("subjects", [])
+    subjects_str = ", ".join(subjects) if subjects else "none"
+
     # Format purpose section
-    purpose = ctx.get('purpose')
+    purpose = ctx.get("purpose")
     if purpose:
         purpose_section = f"- User purpose: {purpose}"
     else:
         purpose_section = ""
-    
+
     # Add PR sections if requested
     pr_sections = get_pr_sections() if want_pr else ""
-    
+
     return template.format(
         style=style,
-        repo=ctx.get('repo', 'unknown'),
-        branch=ctx.get('branch', 'unknown'),
+        repo=ctx.get("repo", "unknown"),
+        branch=ctx.get("branch", "unknown"),
         subjects=subjects_str,
         purpose_section=purpose_section,
-        diff=ctx.get('diff', ''),
-        pr_sections=pr_sections
+        diff=ctx.get("diff", ""),
+        pr_sections=pr_sections,
     )
 
 
