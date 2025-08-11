@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![CI](https://img.shields.io/github/actions/workflow/status/alexvanrossum/commit-gpt/ci.yml?branch=main)](https://github.com/alexvanrossum/commit-gpt/actions/workflows/ci.yml)
+[![CI](https://github.com/avanrossum/commit-gpt/actions/workflows/ci.yml/badge.svg)](https://github.com/avanrossum/commit-gpt/actions/workflows/ci.yml)
 
 AI-powered git commit message generator that turns your staged changes into meaningful commit messages.
 
