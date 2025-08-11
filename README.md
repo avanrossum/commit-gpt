@@ -23,6 +23,12 @@ AI-powered git commit message generator that turns your staged changes into mean
 
 ### Installation
 
+#### Option 1: Install from PyPI (Recommended)
+```bash
+pip install smart-commit-gpt
+```
+
+#### Option 2: Install from Source
 ```bash
 # Clone the repository
 git clone https://github.com/alexvanrossum/commit-gpt.git
@@ -37,16 +43,22 @@ pip install -e .
 Set your API key using a `.env` file (recommended for security):
 
 ```bash
-# Copy the example file and edit it
-cp .env.example .env
+# Create a .env file in your project directory
+echo "OPENAI_API_KEY=your-actual-openai-api-key" > .env
 
+# Or copy the example file (if installing from source)
+cp .env.example .env
 # Edit .env with your actual API key
-# OPENAI_API_KEY=your-actual-openai-api-key
 ```
 
 **That's it!** Commit-GPT will automatically load the `.env` file when you run it. No need to manually source the file or set environment variables.
 
 **Note**: The `.env` file is already in `.gitignore` to prevent accidental commits of your API key.
+
+**Alternative Setup Methods**:
+- **System Environment**: Add `export OPENAI_API_KEY="your-key"` to your shell profile
+- **Runtime**: Run `OPENAI_API_KEY=your-key commit-gpt`
+- **Virtual Environment**: Set in your venv activation script
 
 ### Model Configuration
 
@@ -445,7 +457,7 @@ The tool automatically redacts:
 ### Installation
 
 ```bash
-git clone https://github.com/your-org/commit-gpt.git
+git clone https://github.com/avanrossum/commit-gpt.git
 cd commit-gpt
 pip install -e .
 ```
@@ -479,9 +491,9 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## Support
 
-- 📖 [Documentation](https://github.com/your-org/commit-gpt/wiki)
-- 🐛 [Issues](https://github.com/your-org/commit-gpt/issues)
-- 💬 [Discussions](https://github.com/your-org/commit-gpt/discussions)
+- 📖 [Documentation](https://github.com/avanrossum/commit-gpt/wiki)
+- 🐛 [Issues](https://github.com/avanrossum/commit-gpt/issues)
+- 💬 [Discussions](https://github.com/avanrossum/commit-gpt/discussions)
 
 ---
 
