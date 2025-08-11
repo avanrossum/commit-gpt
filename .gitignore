@@ -144,6 +144,10 @@ ENV/
 env.bak/
 venv.bak/
 
+# Commit-gpt cache
+~/.commit-gpt/
+*.cache.db
+
 # Spyder project settings
 .spyderproject
 .spyproject
