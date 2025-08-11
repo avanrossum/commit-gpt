@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "smart-commit-gpt"
-version = "1.0.0"
+version = "1.0.1"
 description = "AI-powered git commit message generator"
 readme = "README.md"
 license = {text = "MIT"}
