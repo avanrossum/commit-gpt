@@ -1,6 +1,5 @@
 # Commit-GPT
 
-[![PyPI](https://img.shields.io/pypi/v/commit-gpt)](https://pypi.org/project/commit-gpt/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
@@ -24,7 +23,12 @@ AI-powered git commit message generator that turns your staged changes into mean
 ### Installation
 
 ```bash
-pip install commit-gpt
+# Clone the repository
+git clone https://github.com/alexvanrossum/commit-gpt.git
+cd commit-gpt
+
+# Install in development mode
+pip install -e .
 ```
 
 ### Setup
