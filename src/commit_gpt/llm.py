@@ -47,10 +47,13 @@ class OpenAIProvider(LLMProvider):
             raise ImportError("OpenAI package not installed. Run: pip install openai")
     
     def generate(self, prompt: str, max_tokens: int = 500) -> Tuple[str, float]:
-        """Generate response using OpenAI GPT-4o."""
+        """Generate response using OpenAI model."""
         try:
+            # Get model from environment variable, default to gpt-4o
+            model = os.getenv('COMMIT_GPT_OPENAI_MODEL', 'gpt-4o')
+            
             response = self.client.chat.completions.create(
-                model="gpt-4o",
+                model=model,
                 messages=[
                     {"role": "system", "content": self._get_system_prompt()},
                     {"role": "user", "content": prompt}
@@ -78,11 +81,28 @@ Never invent changes. Cite file paths sparingly. Avoid trailing periods in subje
 Respond in the exact format specified by the user."""
 
     def _calculate_cost(self, tokens: int) -> float:
-        """Calculate cost for GPT-4o."""
-        # GPT-4o pricing: $0.005 per 1K input tokens, $0.015 per 1K output tokens
+        """Calculate cost for OpenAI model."""
+        # Get model from environment variable, default to gpt-4o
+        model = os.getenv('COMMIT_GPT_OPENAI_MODEL', 'gpt-4o')
+        
+        # Pricing per 1M tokens (input, output) - converted to per 1K tokens
+        pricing = {
+            'gpt-4o': (0.0025, 0.01),            # GPT-4o: $2.50/$10 per 1M tokens
+            'gpt-4o-mini': (0.00015, 0.0006),    # GPT-4o-mini: $0.15/$0.60 per 1M tokens
+            'gpt-4-turbo': (0.01, 0.03),         # GPT-4-turbo: $10/$30 per 1M tokens
+            'gpt-4': (0.03, 0.06),               # GPT-4: $30/$60 per 1M tokens
+            'gpt-4.1': (0.002, 0.008),           # GPT-4.1: $2.00/$8.00 per 1M tokens
+            'gpt-4.1-mini': (0.0004, 0.0016),    # GPT-4.1-mini: $0.40/$1.60 per 1M tokens
+            'gpt-4.1-nano': (0.0001, 0.0004),    # GPT-4.1-nano: $0.10/$0.40 per 1M tokens
+            'gpt-4.5': (0.075, 0.15),            # GPT-4.5: $75/$150 per 1M tokens
+        }
+        
+        # Default to GPT-4o pricing if model not found
+        input_rate, output_rate = pricing.get(model, pricing['gpt-4o'])
+        
         # Rough estimate: assume 2:1 input/output ratio
-        input_cost = (tokens * 0.6) / 1000 * 0.005
-        output_cost = (tokens * 0.4) / 1000 * 0.015
+        input_cost = (tokens * 0.6) / 1000 * input_rate
+        output_cost = (tokens * 0.4) / 1000 * output_rate
         return input_cost + output_cost
 
 

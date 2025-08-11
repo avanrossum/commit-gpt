@@ -66,7 +66,7 @@ def main(
     risk_check: bool = typer.Option(False, "--risk-check", help="Exit with code 2 if risk > threshold"),
     range: Optional[str] = typer.Option(None, "--range", "-r", help="Git range to analyze"),
     no_llm: bool = typer.Option(False, "--no-llm", help="Use heuristic fallback only (offline)"),
-    max_cost: float = typer.Option(0.02, "--max-$", help="Maximum cost in dollars"),
+    max_cost: float = typer.Option(None, "--max-$", help="Maximum cost in dollars"),
     suggest_groups: bool = typer.Option(False, "--suggest-groups", help="Suggest how to split large diffs into multiple focused commits"),
     force_write: bool = typer.Option(False, "--force-write", help="Force write even for very large diffs (not recommended)"),
 ) -> None:
@@ -115,6 +115,11 @@ def main(
         # Generate commit message
         use_llm = have_llm() and not no_llm
         diff = ctx.get('diff', '')
+        
+        # Get max cost from environment if not provided
+        if max_cost is None:
+            import os
+            max_cost = float(os.getenv('COMMIT_GPT_MAX_COST', '0.02'))
         
         # Check if diff is too large for safe AI processing
         estimated_tokens = estimate_tokens(diff)

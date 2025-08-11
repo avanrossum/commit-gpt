@@ -43,6 +43,20 @@ cp .env.example .env
 
 **Note**: The `.env` file is already in `.gitignore` to prevent accidental commits of your API key.
 
+### Model Configuration
+
+Commit-GPT supports various GPT-4 series models. Configure via environment variable:
+
+```bash
+# In your .env file
+COMMIT_GPT_OPENAI_MODEL=gpt-4o  # Default - best balance of quality and cost
+COMMIT_GPT_OPENAI_MODEL=gpt-4o-mini  # Fastest and cheapest
+COMMIT_GPT_OPENAI_MODEL=gpt-4.1  # Latest model with large context
+COMMIT_GPT_OPENAI_MODEL=gpt-4.1-mini  # Good balance for smaller diffs
+```
+
+⚠️ **Model Compatibility**: Using models other than GPT-4 series may result in unexpected behavior due to token limits and context window differences. Recommended models: `gpt-4o`, `gpt-4o-mini`, `gpt-4.1`, `gpt-4.1-mini`.
+
 ### Basic Usage
 
 ```bash
